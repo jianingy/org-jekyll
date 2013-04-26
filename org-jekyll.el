@@ -46,7 +46,6 @@ language.")
 (defun org-jekyll-publish-dir (project &optional category)
   "Where does the project go, by default a :blog-publishing-directory
    entry in the org-publish-project-alist."
-  (princ category)
   (if org-jekyll-lang-subdirs
       (let ((pdir (plist-get (cdr project) :blog-publishing-directory))
             (langdir (cdr (assoc category org-jekyll-lang-subdirs))))
@@ -157,16 +156,9 @@ language.")
           ;; fails when the entry is not visible (ie, within a folded
           ;; entry).
           (dotimes (n level nil) (org-promote-subtree))
-          (setq html
-                (replace-regexp-in-string
-                 (format "<h%d id=\"sec-1\">\\(.+\\)</h%d>"
-                         top-level top-level)
-                 (format
-                  "<h%d id=\"sec-1\"><a href=\"%s{{ page.url }}\">\\1</a></h%d>"
-                  top-level site-root top-level)
-                 (with-current-buffer
-                     (org-html-export-as-html nil t t t '(:tags nil))
-                   (buffer-string))))
+          (setq html (with-current-buffer
+                         (org-html-export-as-html nil t nil t '(:tags nil))
+                       (buffer-string)))
           (set-buffer org-buffer)
           (delete-region (point-min) (point-max))
           (insert contents)
@@ -178,7 +170,7 @@ language.")
           (when yaml-front-matter
             (insert "---\n")
             (mapc (lambda (pair)
-                    (insert (format "%s: %s\n" (car pair) (cdr pair))))
+                    (insert (format "%s: %s\n" (downcase (car pair)) (cdr pair))))
                   yaml-front-matter)
             (if (and org-jekyll-localize-dir lang)
                 (mapc (lambda (line)
@@ -197,6 +189,7 @@ language.")
   (interactive)
   (save-excursion
     (let ((project (org-publish-get-project-from-filename buffer-file-name)))
+      (princ "publishing " buffer-file-name)
       (org-back-to-heading t)
       (org-jekyll-export-entry project))))
 
