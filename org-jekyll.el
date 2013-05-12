@@ -170,7 +170,7 @@ language.")
           (when yaml-front-matter
             (insert "---\n")
             (mapc (lambda (pair)
-                    (insert (format "%s: %s\n" (downcase (car pair)) (cdr pair))))
+                    (insert (format "%s: \"%s\"\n" (downcase (car pair)) (cdr pair))))
                   yaml-front-matter)
             (if (and org-jekyll-localize-dir lang)
                 (mapc (lambda (line)
